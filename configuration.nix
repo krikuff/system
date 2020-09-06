@@ -10,7 +10,7 @@ let
       src = pkgs.fetchFromGitHub {
         owner = "cobsea";
         repo = "jumpapp";
-	rev = "708619cb8de1f0781f481e1fcd56bdf4bf4f74b9";
+	      rev = "708619cb8de1f0781f481e1fcd56bdf4bf4f74b9";
         hash = "sha256:1jrk4mm42sz6ca2gkb6w3dad53d4im4shpgsq8s4vr6xpl3b43ry";
       };
       makeFlags = [ "PREFIX=$(out)" ];
@@ -22,15 +22,20 @@ let
     };
 
   # TODO: add rust-analyzer as nix-packaged instead of from marketplace
-  # TODO: add nix lang support 
   extensions = (with pkgs.vscode-extensions; [
     ms-vscode.cpptools
   ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
     {
       name = "rust-analyzer";
       publisher = "matklad";
-      version = "0.2.248";
-      sha256 = "1s20xq8fzf21cq95g5xzsnd8whc33iai90h5h6h3akwfpg14wk14";
+      version = "0.2.297";
+      sha256 = "0pj29k5pm1p7f987x9rjd0pks552fxvjv72dscxsk84svl132s0f";
+    }
+    {
+      name = "Nix";
+      publisher = "bbenoist";
+      version = "1.0.1";
+      sha256 = "0zd0n9f5z1f0ckzfjr38xw2zzmcxg1gjrava7yahg5cvdcw6l35b";
     }
     {
       name = "cmake-tools";
@@ -89,11 +94,6 @@ in
     # promptInit = "";
   }; 
 
-  fileSystems."/home" = {
-    fsType = "ext4";
-    device = "/dev/disk/by-label/home"; 
-  };
-
   users = {
     defaultUserShell = pkgs.fish;
     users.cobsea = {
@@ -104,8 +104,6 @@ in
 
   environment.systemPackages = with pkgs; [
     ark
-    calibre
-    discord
     emacs
     firefox
     plasma-browser-integration
@@ -115,7 +113,6 @@ in
     kitty
     libreoffice
     mpv
-    qbittorrent
     spectacle
     tdesktop
     vscode-with-extensions
@@ -163,6 +160,7 @@ in
     neofetch
     wget
     pciutils
+    pinentry
     xclip
     xbindkeys
     valgrind
@@ -206,40 +204,32 @@ in
 
   # Copypasted from github. Resolves shutdown and GPU issues,
   # but disables GPU
-
   boot.kernelPackages = pkgs.linuxPackages_latest;
-  services.xserver.videoDrivers = ["modesetting"];
+  #services.xserver.videoDrivers = ["modesetting"];
   boot.blacklistedKernelModules = ["nouveau"];
 
-  # Second solution form same github issue, enables GPU:
-  # TODO: understand the following
+  # second solution form same github issue, enables GPU:
+  hardware = {
+    nvidia = {
+      modesetting = {
+        enable = true;
+      };
 
-  #hardware = {
-  #  nvidia = {
-  #    modesetting = {
-  #      enable = true;
-  #    };
+      optimus_prime = {
+        enable = true;
+        # values are from lspci
+        # try lspci | grep -P 'VGA|3D'
+        intelBusId = "PCI:0:2:0";
+        nvidiaBusId = "PCI:1:0:0";
+      };
+    };
+  };
 
-  #    optimus_prime = {
-  #      enable = true;
-  #      # values are from lspci
-  #      # try lspci | grep -P 'VGA|3D'
-  #      intelBusId = "PCI:0:2:0";
-  #      nvidiaBusId = "PCI:1:0:0";
-  #    };
-  #  };
-  #};
+  # Moved below
+  # services.xserver.videoDrivers = ["nvidia"];
+  # end of the solution
 
-  #services = {
-  #  xserver = {
-  #    videoDrivers = [
-  #      "nvidia"
-  #    ];
-  #  };
-  #};
-  # end of the second solution
-
-  sound.enable = true;
+    sound.enable = true;
   hardware.pulseaudio = {
     enable = true;
     package = pkgs.pulseaudioFull;
@@ -250,6 +240,8 @@ in
     enable = true;
     layout = "us";
     xkbOptions = "eurosign:e";
+
+    videoDrivers = ["nvidia"];
 
     # Touchpad
     libinput = {
@@ -268,17 +260,17 @@ in
 
   networking = {
     hostName = "nixos"; # hostname
-    networking.networkmanager.enable = true;
-    networking.useDHCP = false;
+    networkmanager.enable = true;
+    useDHCP = false;
 
-    networking.interfaces.eno1.useDHCP = true;
-    networking.interfaces.wlo1.useDHCP = true;
+    interfaces.eno1.useDHCP = true;
+    interfaces.wlo1.useDHCP = true;
 
   # proxy.default = "http://user:password@proxy:port/";
   # proxy.noProxy = "127.0.0.1,localhost,internal.domain";
   };
 
-  console.font = "Lat2-Terminus16"; # TODO: change to JetBrains Mono
+  console.font = "JetBrains Mono";
   console.keyMap = "us";
   i18n = {
     defaultLocale = "en_US.UTF-8";
@@ -312,7 +304,6 @@ in
 
   # Enable CUPS to print documents.
   # services.printing.enable = true;
-
 
   # This value determines the NixOS release with which your system is to be
   # compatible, in order to avoid breaking some software such as database
