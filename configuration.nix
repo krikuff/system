@@ -90,9 +90,12 @@ in
       e = "exa";
       el = "exa --git -lh";
       et = "exa --git -lhTL";
+      cal = "cal --monday";
     };
-    # promptInit = "";
-  }; 
+    promptInit = import ./fish_init.nix;
+  };
+
+ environment.variables.EDITOR = "vim"; 
 
   users = {
     defaultUserShell = pkgs.fish;
@@ -154,6 +157,7 @@ in
     git-hub
     gnupg
     graphviz
+    hyperfine
     htop
     jumpapp
     linuxPackages.perf
@@ -176,6 +180,8 @@ in
       vimrcConfig.packages.myplugins = with pkgs.vimPlugins; { start = [ vim-nix ]; };
       vimrcConfig.customRC = ''
         set backspace=indent,eol,start
+        set number
+        set ruler
       '';
     })
   ];
@@ -229,7 +235,7 @@ in
   # services.xserver.videoDrivers = ["nvidia"];
   # end of the solution
 
-    sound.enable = true;
+  sound.enable = true;
   hardware.pulseaudio = {
     enable = true;
     package = pkgs.pulseaudioFull;
