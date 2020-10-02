@@ -91,6 +91,7 @@ in
       el = "exa --git -lh";
       et = "exa --git -lhTL";
       cal = "cal --monday";
+      bat = "bat -pp";
     };
     promptInit = import ./fish_init.nix;
   };
@@ -149,10 +150,13 @@ in
     libpulseaudio
 
     # Utils
+    atool
     binutils
     bluez
     curl
     cloc
+    feh
+    ffmpegthumbnailer
     git
     git-hub
     gnupg
@@ -170,6 +174,7 @@ in
     valgrind
 
     # Rust utils
+    bat
     exa
     fd
     ripgrep
@@ -177,12 +182,12 @@ in
     #vim
     (vim_configurable.customize {
       name = "vim";
-      vimrcConfig.packages.myplugins = with pkgs.vimPlugins; { start = [ vim-nix ]; };
-      vimrcConfig.customRC = ''
-        set backspace=indent,eol,start
-        set number
-        set ruler
-      '';
+      vimrcConfig.packages.myplugins = with pkgs.vimPlugins; { start = [
+        syntastic
+        vim-nix
+        youcompleteme
+      ]; };
+      vimrcConfig.customRC = import ./vimrc.nix;
     })
   ];
 

@@ -9,3 +9,4 @@ fi
 
 cp configuration.nix /etc/nixos/
 cp fish_init.nix /etc/nixos
+cp vimrc.nix /etc/nixos
