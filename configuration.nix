@@ -1,6 +1,7 @@
-{ config, pkgs, ... }:
+{config, pkgs, ... }:
 
-let 
+let
+  # TODO: consider give jumpapp up
   jumpapp = let
     runtimePath = pkgs.lib.makeSearchPath "bin" (with pkgs; [ xdotool wmctrl xorg.xprop nettools perl ]);
   in
@@ -21,16 +22,9 @@ let
       '';
     };
 
-  # TODO: add rust-analyzer as nix-packaged instead of from marketplace
   extensions = (with pkgs.vscode-extensions; [
-    ms-vscode.cpptools
+    ms-vscode.cpptools matklad.rust-analyzer
   ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
-    {
-      name = "rust-analyzer";
-      publisher = "matklad";
-      version = "0.2.297";
-      sha256 = "0pj29k5pm1p7f987x9rjd0pks552fxvjv72dscxsk84svl132s0f";
-    }
     {
       name = "Nix";
       publisher = "bbenoist";
@@ -61,6 +55,10 @@ let
   vscode-with-extensions = pkgs.vscode-with-extensions.override {
     vscodeExtensions = extensions;
   };
+
+  vim_configurable = pkgs.vim_configurable.override {
+    python = pkgs.python3; # enable python3 support in vim and disable python2 support
+  };
 in
 {
   imports =
@@ -76,27 +74,29 @@ in
     efi.canTouchEfiVariables = true;
   };
 
+  systemd.extraConfig = "DefaultTimeoutStopSec=10s";
+
   hardware.enableAllFirmware = true;
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
   };
 
-  systemd.extraConfig = "DefaultTimeoutStopSec=10s";
-  
+  services.blueman.enable = true;
+
   programs.fish = {
     enable = true;
     shellAliases = {
       e = "exa";
-      el = "exa --git -lh";
-      et = "exa --git -lhTL";
+      ll = "exa --git -lh";
+      lt = "exa --git -lhTL";
       cal = "cal --monday";
       bat = "bat -pp";
+      df = "df -h";
+      v = "vim";
     };
     promptInit = import ./fish_init.nix;
   };
-
- environment.variables.EDITOR = "vim"; 
 
   users = {
     defaultUserShell = pkgs.fish;
@@ -106,72 +106,71 @@ in
     };
   };
 
+  environment.variables.EDITOR = "vim";
+
   environment.systemPackages = with pkgs; [
     ark
-    emacs
     firefox
-    plasma-browser-integration
     galculator
-    gwenview
     keepassx2
     kitty
     libreoffice
+    ly
     mpv
+    plasma-browser-integration
     spectacle
     tdesktop
     vscode-with-extensions
-    
+
     # Langs
-    gcc9
-    gdb
-    glibc.dev
-    gcc9Stdenv
-    ghc
-    libgcc
-    glibc_multi
-    glibc_memusage
-    glibcInfo
-    glibcLocales
-    libcsptr
     clang
     clang-tools
     cmake
+    gcc9
+    gcc9Stdenv
+    gdb
+    ghc
+    glibc.dev
+    glibcInfo
+    glibcLocales
+    glibc_memusage
+    glibc_multi
     gnumake
-    nodejs-12_x
+    libcsptr
+    libgcc
     lld
     lldb
     llvm
     ninja
-    rustup
-    python3
+    nodejs-12_x
     perl
+    python3
+    rust-analyzer
+    rustup
     swift
 
-    libpulseaudio
-
     # Utils
-    atool
     binutils
     bluez
-    curl
     cloc
+    curl
     feh
-    ffmpegthumbnailer
     git
     git-hub
     gnupg
-    graphviz
-    hyperfine
     htop
+    hyperfine
     jumpapp
     linuxPackages.perf
     neofetch
-    wget
     pciutils
     pinentry
-    xclip
-    xbindkeys
+    sxiv
     valgrind
+    wget
+    xbindkeys
+    xclip
+    zathura
 
     # Rust utils
     bat
@@ -179,33 +178,31 @@ in
     fd
     ripgrep
 
-    #vim
+    # vim
     (vim_configurable.customize {
       name = "vim";
       vimrcConfig.packages.myplugins = with pkgs.vimPlugins; { start = [
         syntastic
+        vim-markdown
         vim-nix
-        youcompleteme
+        YouCompleteMe
       ]; };
       vimrcConfig.customRC = import ./vimrc.nix;
     })
   ];
 
-  nixpkgs.config.firefox.enablePlasmaBrowserIntegration = true;
-  services.blueman.enable = true;
-
   fonts = {
     enableFontDir = true;
     enableDefaultFonts = true;
     fonts = with pkgs; [
-      hack-font
       fira-code
-      noto-fonts
-      noto-fonts-emoji
+      hack-font
       iosevka
       jetbrains-mono
+      noto-fonts
+      noto-fonts-emoji
     ];
-    
+
     fontconfig = {
       defaultFonts = {
         monospace = ["JetBrains Mono"];
@@ -226,8 +223,8 @@ in
         enable = true;
       };
 
-      optimus_prime = {
-        enable = true;
+      prime = {
+        sync.enable = true;
         # values are from lspci
         # try lspci | grep -P 'VGA|3D'
         intelBusId = "PCI:0:2:0";
@@ -236,7 +233,7 @@ in
     };
   };
 
-  # Moved below
+  # The following line is moved below
   # services.xserver.videoDrivers = ["nvidia"];
   # end of the solution
 
@@ -249,8 +246,8 @@ in
   # The X11 windowing system
   services = { xserver = {
     enable = true;
-    layout = "us";
-    xkbOptions = "eurosign:e";
+    layout = "us,ru";
+    xkbOptions = "eurosign:e, grp:lwin_toggle, grp:rwin_toggle";
 
     videoDrivers = ["nvidia"];
 
@@ -261,12 +258,15 @@ in
       tappingDragLock = false;
     };
 
-    displayManager.sddm = {
+    windowManager.i3 = {
       enable = true;
-      autoNumlock = true;
+      extraPackages = with pkgs; [
+        dmenu
+        i3status
+        i3lock
+        i3blocks
+      ];
     };
-
-    desktopManager.plasma5.enable = true; 
   };};
 
   networking = {
@@ -285,6 +285,7 @@ in
   console.keyMap = "us";
   i18n = {
     defaultLocale = "en_US.UTF-8";
+    # TODO: maybe i can get rid of the following option since not using plasma
     extraLocaleSettings = {
       LANG = "en_US.UTF-8";
       LC_CTYPE = "en_US.UTF-8";

@@ -6,10 +6,10 @@ function file-rev-parse --argument absolute_path --argument request -d 'Searches
 		if [ -e $absolute_path/$request ]
 			return 0
 		end
-		
+
 		set absolute_path (echo $absolute_path | awk -F/ 'OFS="/" {NF--; print}' )
 	end
-	
+
 	return 1
 end
 
