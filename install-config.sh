@@ -1,12 +1,8 @@
 #! /usr/bin/env bash
 
-set -e
+set -ue
 
-if [[ "`whoami`" != "root" ]]; then
-	echo You have to be root to install configuration!
-	exit
-fi
+[[ `id -u` -ne 0 ]] && { echo Permission denied ; exit 1; }
 
-cp configuration.nix /etc/nixos/
-cp fish_init.nix /etc/nixos
-cp vimrc.nix /etc/nixos
+rsync -u configuration.nix fish_init.nix vimrc.nix \
+	/etc/nixos
