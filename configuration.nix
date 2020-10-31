@@ -1,7 +1,6 @@
 {config, pkgs, ... }:
 
 let
-  # TODO: consider give jumpapp up
   jumpapp = let
     runtimePath = pkgs.lib.makeSearchPath "bin" (with pkgs; [ xdotool wmctrl xorg.xprop nettools perl ]);
   in
@@ -11,7 +10,7 @@ let
       src = pkgs.fetchFromGitHub {
         owner = "cobsea";
         repo = "jumpapp";
-	      rev = "708619cb8de1f0781f481e1fcd56bdf4bf4f74b9";
+        rev = "708619cb8de1f0781f481e1fcd56bdf4bf4f74b9";
         hash = "sha256:1jrk4mm42sz6ca2gkb6w3dad53d4im4shpgsq8s4vr6xpl3b43ry";
       };
       makeFlags = [ "PREFIX=$(out)" ];
@@ -95,7 +94,7 @@ in
       df = "df -h";
       v = "vim";
     };
-    promptInit = import ./fish_init.nix;
+    promptInit = builtins.readFile ./fish_init.fish;
   };
 
   users = {
@@ -160,7 +159,6 @@ in
     gnupg
     htop
     hyperfine
-    jumpapp
     linuxPackages.perf
     neofetch
     pciutils
@@ -182,12 +180,16 @@ in
     (vim_configurable.customize {
       name = "vim";
       vimrcConfig.packages.myplugins = with pkgs.vimPlugins; { start = [
+        NeoSolarized
+        YouCompleteMe
         syntastic
+        vim-airline
+        vim-airline-themes
+        vim-fish
         vim-markdown
         vim-nix
-        YouCompleteMe
       ]; };
-      vimrcConfig.customRC = import ./vimrc.nix;
+      vimrcConfig.customRC = builtins.readFile ./vimrc;
     })
   ];
 
