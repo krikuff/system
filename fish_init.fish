@@ -1,18 +1,16 @@
 set fish_greeting
 
-function file-rev-parse --argument absolute_path --argument request -d 'Searches current and every parent dir for given file'
+function file-rev-parse -a absolute_path request -d 'Search for request filename in all the directories up starting from absolute_path'
   while [ -n $absolute_path ]
-    if [ -e $absolute_path/$request ]
-      return 0
-    end
+    [ -e "$absolute_path/$request" ] ;and return 0
 
-    set absolute_path (echo $absolute_path | awk -F/ 'OFS="/" {NF--; print}' )
+    set absolute_path (echo $absolute_path | awk -F/ 'OFS="/" {NF--; print}')
   end
 
   return 1
 end
 
-function fish_prompt  --description "Write out the prompt"
+function fish_prompt -d "Write out the prompt"
   set -l color_cwd
   set -l prefix
 
@@ -29,25 +27,15 @@ function fish_prompt  --description "Write out the prompt"
       set prefix 'λ'
   end
 
-  set current_git_dir (git rev-parse --git-dir 2> /dev/null)
-
-  echo -n -s [ ' ' (date +"%H:%M") ' | ' "$USER" '@' "$hostname" ' | '
-  echo -n -s (set_color $color_cwd) (prompt_pwd) (set_color normal)
+  echo -ns [ ' ' (date +"%H:%M") ' | ' "$USER" '@' "$hostname" ' | '
+  echo -ns (set_color $color_cwd) (prompt_pwd) (set_color normal)
 
   # TODO: optimise rev-parse
-  if file-rev-parse (pwd) Cargo.toml
-  echo -n -s ':🦀'
-  end
+  file-rev-parse (pwd) Cargo.toml ;and echo -n ':🦀'
+  file-rev-parse (pwd) CMakeLists.txt ;and echo -ns ':' (set_color $color_cwd) 'C/C++' (set_color normal)
 
-  if file-rev-parse (pwd) CMakeLists.txt
-  echo -n -s ':' (set_color $color_cwd) 'C/C++' (set_color normal)
-  end
+  set current_git_dir (git rev-parse --git-dir 2> /dev/null)
+  [ -n "$current_git_dir" ] ;and echo -ns ':' (set_color FF00FF) (git symbolic-ref --short HEAD) (set_color normal)
 
-  if [ -n "$current_git_dir" ]
-    echo -n -s ':' (set_color FF00FF) (git symbolic-ref --short HEAD) (set_color normal)
-  end
-
-  echo -s ' ' ]
-
-  echo -n -s "$prefix "
+  echo -ns ' ' ] \n "$prefix "
 end

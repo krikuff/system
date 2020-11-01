@@ -188,6 +188,7 @@ in
         vim-fish
         vim-markdown
         vim-nix
+        vim-toml
       ]; };
       vimrcConfig.customRC = builtins.readFile ./vimrc;
     })
