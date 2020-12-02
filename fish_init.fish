@@ -1,6 +1,16 @@
 set fish_greeting
 
-function file-rev-parse -a absolute_path request -d 'Search for request filename in all the directories up starting from absolute_path'
+abbr -ga bat bat -pp
+abbr -ga cal cal --monday
+abbr -ga df df -h
+abbr -ga e exa
+abbr -ga gco git chekout
+abbr -ga gs git status
+abbr -ga ll exa --git -lh
+abbr -ga lt exa --git -lhTL
+abbr -ga v nvim
+
+function file-rev-parse -a absolute_path request -d 'Search for the requested filename in all the directories up starting from absolute_path'
   while [ -n $absolute_path ]
     [ -e "$absolute_path/$request" ] ;and return 0
 

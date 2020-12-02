@@ -1,26 +1,7 @@
 {config, pkgs, ... }:
 
 let
-  jumpapp = let
-    runtimePath = pkgs.lib.makeSearchPath "bin" (with pkgs; [ xdotool wmctrl xorg.xprop nettools perl ]);
-  in
-    pkgs.stdenv.mkDerivation rec {
-      version = "1.1";
-      name = "jumpapp-${version}";
-      src = pkgs.fetchFromGitHub {
-        owner = "cobsea";
-        repo = "jumpapp";
-        rev = "708619cb8de1f0781f481e1fcd56bdf4bf4f74b9";
-        hash = "sha256:1jrk4mm42sz6ca2gkb6w3dad53d4im4shpgsq8s4vr6xpl3b43ry";
-      };
-      makeFlags = [ "PREFIX=$(out)" ];
-      buildInputs = [ pkgs.perl pkgs.pandoc ];
-      postFixup = ''
-        sed -i "2 i export PATH=${runtimePath}:\$PATH" $out/bin/jumpapp
-        sed -i "2 i export PATH=${runtimePath}:\$PATH" $out/bin/jumpappify-desktop-entry
-      '';
-    };
-
+  # TODO: get rid of vscode?
   extensions = (with pkgs.vscode-extensions; [
     ms-vscode.cpptools matklad.rust-analyzer
   ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
@@ -54,10 +35,6 @@ let
   vscode-with-extensions = pkgs.vscode-with-extensions.override {
     vscodeExtensions = extensions;
   };
-
-  vim_configurable = pkgs.vim_configurable.override {
-    python = pkgs.python3; # enable python3 support in vim and disable python2 support
-  };
 in
 {
   imports =
@@ -85,15 +62,6 @@ in
 
   programs.fish = {
     enable = true;
-    shellAliases = {
-      e = "exa";
-      ll = "exa --git -lh";
-      lt = "exa --git -lhTL";
-      cal = "cal --monday";
-      bat = "bat -pp";
-      df = "df -h";
-      v = "vim";
-    };
     promptInit = builtins.readFile ./fish_init.fish;
   };
 
@@ -105,23 +73,28 @@ in
     };
   };
 
-  environment.variables.EDITOR = "vim";
+  environment.variables.EDITOR = "nvim";
 
   environment.systemPackages = with pkgs; [
+    alacritty
     ark
+    dmenu
+    feh # Only for setting the wallpaper. How to set them without feh?
     firefox
     galculator
     keepassx2
-    kitty
     libreoffice
-    ly
+    ly # TODO: find out how to use
     mpv
-    plasma-browser-integration
     spectacle
+    stalonetray
+    sxiv
     tdesktop
     vscode-with-extensions
+    xmobar
+    zathura
 
-    # Langs
+    # Langs TODO: do i really need all these glibc tools?
     clang
     clang-tools
     cmake
@@ -141,7 +114,7 @@ in
     lldb
     llvm
     ninja
-    nodejs-12_x
+    nodejs-14_x
     perl
     python3
     rust-analyzer
@@ -149,50 +122,50 @@ in
     swift
 
     # Utils
+    bat
     binutils
     bluez
     cloc
     curl
-    feh
+    dash # TODO: learn how to use it as /bin/sh
+    exa
+    fd
     git
-    git-hub
     gnupg
     htop
     hyperfine
     linuxPackages.perf
     neofetch
     pciutils
-    pinentry
-    sxiv
+    pinentry # what for? gpg or something like that?..
+    ripgrep
     valgrind
     wget
-    xbindkeys
     xclip
-    zathura
 
-    # Rust utils
-    bat
-    exa
-    fd
-    ripgrep
-
-    # vim
-    (vim_configurable.customize {
-      name = "vim";
-      vimrcConfig.packages.myplugins = with pkgs.vimPlugins; { start = [
-        NeoSolarized
-        YouCompleteMe
-        syntastic
-        vim-airline
-        vim-airline-themes
-        vim-fish
-        vim-markdown
-        vim-nix
-        vim-toml
-      ]; };
-      vimrcConfig.customRC = builtins.readFile ./vimrc;
+    # neovim
+    (neovim.override {
+      vimAlias = true;
+      configure = {
+        packages.myPlugins = with pkgs.vimPlugins; { start = [
+            NeoSolarized
+            coc-markdownlint
+            coc-nvim
+            coc-rust-analyzer
+            vim-airline
+            vim-airline-themes
+            vim-fish
+            vim-nix
+            vim-toml
+          ];
+          opt = [];
+        };
+        customRC = builtins.readFile ./vimrc;
+      };
     })
   ];
+
+  programs.slock.enable = true;
 
   fonts = {
     enableFontDir = true;
@@ -208,7 +181,7 @@ in
 
     fontconfig = {
       defaultFonts = {
-        monospace = ["JetBrains Mono"];
+        monospace = [ "JetBrains Mono" ];
       };
     };
   };
@@ -217,7 +190,7 @@ in
   # but disables GPU
   boot.kernelPackages = pkgs.linuxPackages_latest;
   #services.xserver.videoDrivers = ["modesetting"];
-  boot.blacklistedKernelModules = ["nouveau"];
+  boot.blacklistedKernelModules = [ "nouveau" ];
 
   # second solution form same github issue, enables GPU:
   hardware = {
@@ -250,7 +223,7 @@ in
   services = { xserver = {
     enable = true;
     layout = "us,ru";
-    xkbOptions = "eurosign:e, grp:lwin_toggle, grp:rwin_toggle";
+    xkbOptions = "eurosign:e, grp:shifts_toggle";
 
     videoDrivers = ["nvidia"];
 
@@ -261,19 +234,14 @@ in
       tappingDragLock = false;
     };
 
-    windowManager.i3 = {
+    windowManager.xmonad = {
       enable = true;
-      extraPackages = with pkgs; [
-        dmenu
-        i3status
-        i3lock
-        i3blocks
-      ];
+      enableContribAndExtras = true;
     };
   };};
 
   networking = {
-    hostName = "nixos"; # hostname
+    hostName = "nixos";
     networkmanager.enable = true;
     useDHCP = false;
 
@@ -286,26 +254,7 @@ in
 
   console.font = "JetBrains Mono";
   console.keyMap = "us";
-  i18n = {
-    defaultLocale = "en_US.UTF-8";
-    # TODO: maybe i can get rid of the following option since not using plasma
-    extraLocaleSettings = {
-      LANG = "en_US.UTF-8";
-      LC_CTYPE = "en_US.UTF-8";
-      LC_NUMERIC = "en_US.UTF-8";
-      LC_TIME = "en_US.UTF-8";
-      LC_COLLATE = "en_US.UTF-8";
-      LC_MONETARY = "en_US.UTF-8";
-      LC_MESSAGES = "en_US.UTF-8";
-      LC_PAPER = "en_US.UTF-8";
-      LC_NAME = "en_US.UTF-8";
-      LC_ADDRESS = "en_US.UTF-8";
-      LC_TELEPHONE = "en_US.UTF-8";
-      LC_MEASUREMENT = "en_US.UTF-8";
-      LC_IDENTIFICATION = "en_US.UTF-8";
-      LC_ALL = "en_US.UTF-8";
-    };
-  };
+  i18n.defaultLocale = "en_US.UTF-8";
 
   time.timeZone = "Asia/Tomsk";
 
