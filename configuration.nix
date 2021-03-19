@@ -1,41 +1,5 @@
 {config, pkgs, ... }:
 
-let
-  # TODO: get rid of vscode?
-  extensions = (with pkgs.vscode-extensions; [
-    ms-vscode.cpptools matklad.rust-analyzer
-  ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
-    {
-      name = "Nix";
-      publisher = "bbenoist";
-      version = "1.0.1";
-      sha256 = "0zd0n9f5z1f0ckzfjr38xw2zzmcxg1gjrava7yahg5cvdcw6l35b";
-    }
-    {
-      name = "cmake-tools";
-      publisher = "ms-vscode";
-      version = "1.4.1";
-      sha256 = "18hj94p3003cba141smirckpsz56cg3fabb8il2mx1xzbqlx2xhk";
-    }
-    {
-      name = "cmake";
-      publisher = "twxs";
-      version = "0.0.17";
-      sha256 = "11hzjd0gxkq37689rrr2aszxng5l9fwpgs9nnglq3zhfa1msyn08";
-    }
-    {
-      name = "language-haskell";
-      publisher = "justusadam";
-      version = "3.3.0";
-      sha256 = "1285bs89d7hqn8h8jyxww7712070zw2ccrgy6aswd39arscniffs";
-    }
-
-  ]);
-
-  vscode-with-extensions = pkgs.vscode-with-extensions.override {
-    vscodeExtensions = extensions;
-  };
-in
 {
   imports =
     [
@@ -52,9 +16,9 @@ in
 
   systemd.extraConfig = "DefaultTimeoutStopSec=10s";
 
-  hardware.enableAllFirmware = true;
   hardware.bluetooth = {
     enable = true;
+    enableAllFirmware = true;
     powerOnBoot = true;
   };
 
@@ -94,7 +58,6 @@ in
     spectacle
     sxiv
     tdesktop
-    vscode-with-extensions
     xmobar
     zathura
 
