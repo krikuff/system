@@ -60,9 +60,12 @@ in
 
   services.blueman.enable = true;
 
-  programs.fish = {
-    enable = true;
-    promptInit = builtins.readFile ./fish_init.fish;
+  programs = {
+    slock.enable = true;
+    fish = {
+      enable = true;
+      promptInit = builtins.readFile ./fish_init.fish;
+    };
   };
 
   users = {
@@ -77,49 +80,40 @@ in
 
   environment.systemPackages = with pkgs; [
     alacritty
+    calibre
     ark
     dmenu
-    feh # Only for setting the wallpaper. How to set them without feh?
+    feh # Only for setting the wallpaper. How to set it without feh?
     firefox
     galculator
     keepassx2
     libreoffice
     ly # TODO: find out how to use
     mpv
+    polybar
     spectacle
-    stalonetray
     sxiv
     tdesktop
     vscode-with-extensions
     xmobar
     zathura
 
-    # Langs TODO: do i really need all these glibc tools?
-    clang
+    # Langs
     clang-tools
+    clang_11
     cmake
-    gcc9
-    gcc9Stdenv
+    gcc10
     gdb
     ghc
-    glibc.dev
-    glibcInfo
-    glibcLocales
-    glibc_memusage
-    glibc_multi
     gnumake
-    libcsptr
-    libgcc
-    lld
     lldb
-    llvm
     ninja
     nodejs-14_x
     perl
     python3
     rust-analyzer
     rustup
-    swift
+    # swift
 
     # Utils
     bat
@@ -134,6 +128,7 @@ in
     gnupg
     htop
     hyperfine
+    killall
     linuxPackages.perf
     neofetch
     pciutils
@@ -156,6 +151,7 @@ in
             vim-airline-themes
             vim-fish
             vim-nix
+            vim-signify
             vim-toml
           ];
           opt = [];
@@ -164,8 +160,6 @@ in
       };
     })
   ];
-
-  programs.slock.enable = true;
 
   fonts = {
     enableFontDir = true;
@@ -177,27 +171,22 @@ in
       jetbrains-mono
       noto-fonts
       noto-fonts-emoji
+      siji
     ];
 
-    fontconfig = {
-      defaultFonts = {
-        monospace = [ "JetBrains Mono" ];
-      };
-    };
+    fontconfig.defaultFonts.monospace = [ "JetBrains Mono" ];
   };
 
   # Copypasted from github. Resolves shutdown and GPU issues,
   # but disables GPU
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs.linuxPackages; # TODO: change it back to linuxPackages_latest when nvidia module gets fixed
   #services.xserver.videoDrivers = ["modesetting"];
   boot.blacklistedKernelModules = [ "nouveau" ];
 
   # second solution form same github issue, enables GPU:
   hardware = {
     nvidia = {
-      modesetting = {
-        enable = true;
-      };
+      modesetting.enable = true;
 
       prime = {
         sync.enable = true;
@@ -220,7 +209,7 @@ in
   };
 
   # The X11 windowing system
-  services = { xserver = {
+  services.xserver = {
     enable = true;
     layout = "us,ru";
     xkbOptions = "eurosign:e, grp:shifts_toggle";
@@ -238,7 +227,7 @@ in
       enable = true;
       enableContribAndExtras = true;
     };
-  };};
+  };
 
   networking = {
     hostName = "nixos";
