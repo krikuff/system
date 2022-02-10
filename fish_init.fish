@@ -6,19 +6,22 @@ abbr -ga df df -h
 abbr -ga e exa
 abbr -ga la exa --git -lha
 abbr -ga ll exa --git -lh
+abbr -ga ls exa
 abbr -ga lt exa --git -lhTL
+abbr -ga s sudo
 abbr -ga v nvim
 
 # git abbrs
 abbr -ga ga git add
 abbr -ga gba git branch --list -a
 abbr -ga gcm git commit -m
-abbr -ga gco git chekout
+abbr -ga gco git checkout
 abbr -ga gd git diff --patience
 abbr -ga glo git log --oneline
 abbr -ga gs git status
 
 set -x MANPAGER "sh -c 'col -bx | bat -l man -p'"
+set -a PATH "/home/cobsea/Code/Experimental/scripts/global"
 
 function file-rev-parse -a absolute_path request -d 'Search for the requested filename in all the directories up starting from absolute_path'
   while [ -n $absolute_path ]

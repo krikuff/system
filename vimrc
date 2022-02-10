@@ -1,6 +1,6 @@
 " General settings
 set langmap=ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ;QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>,йцукенгшщзхъфывапролджэячсмитью;qwertyuiop[]asdfghjkl\;'zxcvbnm.
-",б;, " <=  can't langmap this!
+",б;, " <-  can't langmap this!
 
 set exrc secure
 
@@ -47,3 +47,9 @@ inoremap <silent><expr> <TAB>
       \ pumvisible() ? "\<C-n>" :
       \ <SID>check_back_space() ? "\<TAB>" :
       \ coc#refresh()
+
+nmap <silent> gd :call CocAction('jumpDefinition')<CR>
+nmap <silent> gr :call CocAction('jumpReferences')<CR>
+nmap <silent> gi :call CocAction('jumpImplementation')<CR>
+nmap <silent> gR :call CocAction('refactor')<CR>
+"TODO: come up with coc search here

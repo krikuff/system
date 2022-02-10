@@ -16,9 +16,9 @@
 
   systemd.extraConfig = "DefaultTimeoutStopSec=10s";
 
+  hardware.enableAllFirmware = true;
   hardware.bluetooth = {
     enable = true;
-    enableAllFirmware = true;
     powerOnBoot = true;
   };
 
@@ -44,16 +44,18 @@
 
   environment.systemPackages = with pkgs; [
     alacritty
-    calibre
     ark
+    calibre
     dmenu
     feh # Only for setting the wallpaper. How to set it without feh?
+    ffmpeg
     firefox
     galculator
     keepassx2
     libreoffice
     ly # TODO: find out how to use
     mpv
+    mutt
     polybar
     spectacle
     sxiv
@@ -63,9 +65,10 @@
 
     # Langs
     clang-tools
-    clang_11
+    clang_13
     cmake
-    gcc10
+    cmake-language-server
+    gcc11
     gdb
     ghc
     gnumake
@@ -76,13 +79,14 @@
     python3
     rust-analyzer
     rustup
-    # swift
 
     # Utils
     bat
     binutils
     bluez
+    brightnessctl
     cloc
+    ctags
     curl
     dash # TODO: learn how to use it as /bin/sh
     exa
@@ -110,6 +114,9 @@
             coc-markdownlint
             coc-nvim
             coc-rust-analyzer
+            coc-tsserver
+            ctrlp
+            nerdtree
             vim-airline
             vim-airline-themes
             vim-fish
@@ -125,7 +132,7 @@
   ];
 
   fonts = {
-    enableFontDir = true;
+    fontDir.enable = true;
     enableDefaultFonts = true;
     fonts = with pkgs; [
       fira-code
@@ -142,22 +149,20 @@
 
   # Copypasted from github. Resolves shutdown and GPU issues,
   # but disables GPU
-  boot.kernelPackages = pkgs.linuxPackages; # TODO: change it back to linuxPackages_latest when nvidia module gets fixed
+  boot.kernelPackages = pkgs.linuxPackages_latest; # pkgs.linuxPackages; # TODO: change it back to linuxPackages_latest when nvidia module gets fixed
   #services.xserver.videoDrivers = ["modesetting"];
   boot.blacklistedKernelModules = [ "nouveau" ];
 
   # second solution form same github issue, enables GPU:
-  hardware = {
-    nvidia = {
-      modesetting.enable = true;
+  hardware.nvidia = {
+    modesetting.enable = true;
 
-      prime = {
-        sync.enable = true;
-        # values are from lspci
-        # try lspci | grep -P 'VGA|3D'
-        intelBusId = "PCI:0:2:0";
-        nvidiaBusId = "PCI:1:0:0";
-      };
+    prime = {
+      sync.enable = true;
+      # values are from lspci
+      # try lspci | grep -P 'VGA|3D'
+      intelBusId = "PCI:0:2:0";
+      nvidiaBusId = "PCI:1:0:0";
     };
   };
 
@@ -182,8 +187,8 @@
     # Touchpad
     libinput = {
       enable = true;
-      disableWhileTyping = true;
-      tappingDragLock = false;
+      touchpad.disableWhileTyping = true;
+      touchpad.tappingDragLock = false;
     };
 
     windowManager.xmonad = {
@@ -193,7 +198,7 @@
   };
 
   networking = {
-    hostName = "nixos";
+    hostName = "cobsea-laptop-0";
     networkmanager.enable = true;
     useDHCP = false;
 
