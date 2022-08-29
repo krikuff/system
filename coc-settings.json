@@ -1,0 +1,5 @@
+{
+    "suggest.noselect": true,
+    "suggest.enablePreselect": true,
+    "suggest.virtualText": true
+}
