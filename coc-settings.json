@@ -1,5 +1,16 @@
 {
     "suggest.noselect": true,
     "suggest.enablePreselect": true,
-    "suggest.virtualText": true
+    "suggest.virtualText": true,
+    "diagnostic.format": "%message [%source%code]",
+    "diagnostic.virtualText": false,
+    "diagnostic.virtualTextCurrentLineOnly": false,
+    "diagnostic.virtualTextLevel": "warning",
+    "diagnostic.virtualTextWinCol": 120,
+    "diagnostic.errorSign": "✝",
+    "diagnostic.infoSign": "ⓘ",
+    "diagnostic.hintSign": ">>",
+    "inlayHint.enableParameter": false,
+    "inlayHint.parameterSeparator": "$",
+    "clangd.path": "clangd",
 }
