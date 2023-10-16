@@ -6,7 +6,6 @@ set fish_greeting
 # end
 
 set -x MANPAGER "sh -c 'col -bx | batcat -l man -p'"
-set EDITOR vim
 
 fish_vi_key_bindings
 
@@ -39,62 +38,8 @@ alias fd fdfind
 alias bat batcat
 
 set -x EDITOR nvim
-# set -x TERM "xterm-256color" # WTF was kitty for long time
 
-function file-rev-parse -a absolute_path request -d 'Search for the requested filename in all the directories up starting from absolute_path'
-  while [ -n $absolute_path ]
-    [ -e "$absolute_path/$request" ] ;and return 0
-
-    set absolute_path (echo $absolute_path | awk -F/ 'OFS="/" {NF--; print}')
-  end
-
-  return 1
-end
-
-function fish_prompt_old -d "Write out the prompt"
-  set -l color_cwd
-  set -l prefix
-  #set -x hostname (hostname)
-
-  switch "$USER"
-    case root toor
-      if set -q fish_color_cwd_root
-        set color_cwd $fish_color_cwd_root
-      else
-        set color_cwd $fish_color_cwd
-      end
-      set prefix '#'
-    case '*'
-      set color_cwd $fish_color_cwd
-      set prefix 'λ'
-  end
-
-  echo -ns [ ' ' (date +"%H:%M") ' | ' "$USER" ' | '
-  echo -ns (set_color $color_cwd) (prompt_pwd) (set_color normal)
-
-  # TODO: optimise rev-parse
-  file-rev-parse (pwd) Cargo.toml ;and echo -n ': 🦀'
-  file-rev-parse (pwd) CMakeLists.txt ;and echo -ns ' : ' (set_color $color_cwd) 'C/C++' (set_color normal)
-
-  set git_dir (git rev-parse --git-dir 2> /dev/null)
-  if test -n "$git_dir"
-    set git_branch (git symbolic-ref --short HEAD 2> /dev/null)
-    if test -n "$git_branch"
-      set git_string "$git_branch"
-    else
-      set git_tag (git describe --tags 2> /dev/null)
-      if test -n "$git_tag"
-        set git_string "🏷️$git_tag"
-      end
-    end
-  end
-
-  [ -n "$git_string" ] ;and echo -ns ' : ' (set_color FF00FF) "$git_string" (set_color normal)
-
-  echo -ns ' ' ] \n "$prefix "
-end
-
-function my_prompt_login --description 'display user name for the prompt'
+function my_prompt_login --description 'user@hostname, but hostname only if it is non-standard everyday localhost'
     if not set -q __fish_machine
         set -g __fish_machine
         set -l debian_chroot $debian_chroot
@@ -135,7 +80,7 @@ function fish_prompt --description 'Write out the prompt'
 
     # Color the prompt differently when we're root
     set -l color_cwd $fish_color_cwd
-    set -l suffix '>'
+    set -l suffix 'λ'
     if functions -q fish_is_root_user; and fish_is_root_user
         if set -q fish_color_cwd_root
             set color_cwd $fish_color_cwd_root
@@ -155,10 +100,10 @@ function fish_prompt --description 'Write out the prompt'
     set -l statusb_color (set_color $bold_flag $fish_color_status)
     set -l prompt_status (__fish_print_pipestatus "[" "]" "|" "$status_color" "$statusb_color" $last_pipestatus)
 
-    echo -n -s (my_prompt_login)' ' (set_color $color_cwd) (prompt_pwd) $normal (fish_vcs_prompt) $normal " "$prompt_status $suffix " "
+    echo -n -s -e (my_prompt_login)' ' (set_color $color_cwd) (prompt_pwd) $normal (fish_vcs_prompt) $normal " "$prompt_status "\n" $suffix " "
 end
 
 if not set -q TMUX
-     echo "TODO: Make tmux run at start"
+     echo "It would be better to run in tmux"
 # https://medium.com/@HazuliFidastian/run-tmux-automatically-on-fish-shell-2b62622661c7
 end
