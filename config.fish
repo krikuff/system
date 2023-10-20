@@ -1,19 +1,19 @@
-set fish_greeting
+set -u fish_greeting
 
-# TODO: include the following
-# if status is-interactive
-#     # Commands to run in interactive sessions can go here
-# end
+alias bat batcat
+alias fd fdfind
+alias tote 'cp ~/Templates/CXX_WITH_ALL_INCLUDES.cpp'
+
+status is-interactive || exit 0
 
 set -x MANPAGER "sh -c 'col -bx | batcat -l man -p'"
+set -x EDITOR nvim
 
 fish_vi_key_bindings
 
 # Git abbrs
 abbr -a ga git add
 abbr -a gba git branch --list -a
-abbr -a gcl clone_n_switch.sh
-# abbr -a gcm git commit -m
 abbr -a gcf git commit -F commit_message
 abbr -a gco git checkout
 abbr -a gd git diff --patience
@@ -27,17 +27,13 @@ abbr -a gcpc git cherry-pick --continue
 # Other abbrs
 abbr -a df df -h
 abbr -a du du -h
+abbr -a free free -h
+abbr -a j jobs
+abbr -a ll exa -l
+abbr -a ls exa
+abbr -a lt exa -T -L 2
 abbr -a s sudo
 abbr -a v nvim
-abbr -a ls exa
-abbr -a ll exa -l
-abbr -a lt exa -T -L 2
-
-alias tote 'cp ~/Code/template.cpp'
-alias fd fdfind
-alias bat batcat
-
-set -x EDITOR nvim
 
 function my_prompt_login --description 'user@hostname, but hostname only if it is non-standard everyday localhost'
     if not set -q __fish_machine
@@ -77,6 +73,7 @@ function fish_prompt --description 'Write out the prompt'
     set -l normal (set_color normal)
     set -q fish_color_status
     or set -g fish_color_status red
+    set -l vcs_color (set_color "FF22FF")
 
     # Color the prompt differently when we're root
     set -l color_cwd $fish_color_cwd
@@ -100,7 +97,9 @@ function fish_prompt --description 'Write out the prompt'
     set -l statusb_color (set_color $bold_flag $fish_color_status)
     set -l prompt_status (__fish_print_pipestatus "[" "]" "|" "$status_color" "$statusb_color" $last_pipestatus)
 
-    echo -n -s -e (my_prompt_login)' ' (set_color $color_cwd) (prompt_pwd) $normal (fish_vcs_prompt) $normal " "$prompt_status "\n" $suffix " "
+    echo -nes (my_prompt_login)' ' (set_color $color_cwd) (prompt_pwd) $normal
+    set vcs_prompt (fish_vcs_prompt ' ') && echo -nes " [" $vcs_color $vcs_prompt $normal "] "
+    echo -nes " "$prompt_status "\n" $suffix " "
 end
 
 if not set -q TMUX
