@@ -16,13 +16,14 @@ abbr -a ga git add
 abbr -a gba git branch --list -a
 abbr -a gcf git commit -F commit_message
 abbr -a gco git checkout
-abbr -a gd git diff --patience
-abbr -a gds git diff --shortstat
-abbr -a gdc git diff --patience --cached
-abbr -a glo git log --oneline
-abbr -a gs git status
 abbr -a gcp git cherry-pick
 abbr -a gcpc git cherry-pick --continue
+abbr -a gd git diff --patience
+abbr -a gdc git diff --patience --cached
+abbr -a gdh git diff HEAD~1 HEAD
+abbr -a gds git diff --shortstat
+abbr -a glo git log --oneline
+abbr -a gs git status
 
 # Other abbrs
 abbr -a df df -h
@@ -104,5 +105,6 @@ end
 
 if not set -q TMUX
      echo "It would be better to run in tmux"
+     echo "TODO: Make tmux save sessions (at least names and layout of windows)"
 # https://medium.com/@HazuliFidastian/run-tmux-automatically-on-fish-shell-2b62622661c7
 end
