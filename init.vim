@@ -27,7 +27,7 @@ set exrc secure
 
 set backspace=indent,eol,start
 
-set tabstop=5 shiftwidth=5 so=2
+set tabstop=4 shiftwidth=4 so=2
 set expandtab autoindent smartindent
 
 set noincsearch nohlsearch
